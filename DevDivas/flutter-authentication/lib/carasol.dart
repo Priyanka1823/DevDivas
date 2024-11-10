@@ -6,43 +6,43 @@ import 'login.dart';
 
 class CarouselWithIndicatorPage extends StatefulWidget {
   @override
-  _CarouselWithIndicatorPageState createState() =>
-      _CarouselWithIndicatorPageState();
+  _CarouselWithIndicatorPageState createState() => _CarouselWithIndicatorPageState();
 }
 
 class _CarouselWithIndicatorPageState extends State<CarouselWithIndicatorPage> {
   int _currentIndex = 0;
-  //final CarouselController _carouselController = CarouselController();
+  final CarouselController _carouselController = CarouselController();
 
   // List of images and corresponding texts
   final List<String> _carouselImages = <String>[
-    'assets/images/image1.jpg',
-    'assets/images/background.jpg',
-    'assets/images/image3.jpg',
+    'assets/images/img1.jpg',
+    'assets/images/img2.jpg',
+    'assets/images/img3.jpg',
   ];
 
   final List<String> _carouselTexts = [
-    'This is the description for Image 1.',
-    'This is the description for Image 2.',
-    'This is the description for Image 3.',
+    'Discover amazing DIY crafts.',
+    'Turn everyday items into art.',
+    'Unleash your creativity today!',
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.green[300],
       body: Stack(
         children: [
           // Title at the top of the screen
           Positioned(
-            top: 40,
+            top: 60,
             left: 20,
             child: Text(
-              'DIY Hacks',
+              'ReCraft',
               style: TextStyle(
-                fontSize: 30,
+                fontSize: 32,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
+                letterSpacing: 1.2,
               ),
             ),
           ),
@@ -53,9 +53,10 @@ class _CarouselWithIndicatorPageState extends State<CarouselWithIndicatorPage> {
               itemCount: _carouselImages.length,
               options: CarouselOptions(
                 height: MediaQuery.of(context).size.height * 0.6,
-                viewportFraction: 1.0,
-                enlargeCenterPage: false,
+                viewportFraction: 0.9,
+                enlargeCenterPage: true,
                 autoPlay: true,
+                autoPlayInterval: const Duration(seconds: 3),
                 onPageChanged: (index, reason) {
                   setState(() {
                     _currentIndex = index;
@@ -66,30 +67,40 @@ class _CarouselWithIndicatorPageState extends State<CarouselWithIndicatorPage> {
                 return Stack(
                   children: [
                     Positioned.fill(
-                      child: Image.asset(
-                        _carouselImages[index],
-                        fit: BoxFit.contain,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.asset(
+                          _carouselImages[index],
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                     Positioned(
                       bottom: 20,
-                      left: 16,
-                      right: 16,
-                      child: Text(
-                        _carouselTexts[index],
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          shadows: [
-                            Shadow(
-                              blurRadius: 10.0,
-                              color: Colors.black,
-                              offset: Offset(2.0, 2.0),
-                            ),
-                          ],
+                      left: 20,
+                      right: 20,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.6),
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        textAlign: TextAlign.center,
+                        child: Text(
+                          _carouselTexts[index],
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            shadows: [
+                              Shadow(
+                                blurRadius: 10.0,
+                                color: Colors.black,
+                                offset: Offset(2.0, 2.0),
+                              ),
+                            ],
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
                   ],
@@ -100,18 +111,19 @@ class _CarouselWithIndicatorPageState extends State<CarouselWithIndicatorPage> {
 
           // Smooth Page Indicator
           Positioned(
-            bottom: 80,
+            bottom: 120,
             left: 0,
             right: 0,
             child: Center(
               child: AnimatedSmoothIndicator(
                 activeIndex: _currentIndex,
                 count: _carouselImages.length,
-                effect: WormEffect(
-                  dotHeight: 12,
-                  dotWidth: 12,
-                  activeDotColor: Colors.blue,
+                effect: ExpandingDotsEffect(
+                  dotHeight: 10,
+                  dotWidth: 10,
+                  activeDotColor: Color(0xFFA3E635), // Light green to match the color scheme
                   dotColor: Colors.grey,
+                  expansionFactor: 4,
                 ),
               ),
             ),
@@ -119,7 +131,7 @@ class _CarouselWithIndicatorPageState extends State<CarouselWithIndicatorPage> {
 
           // Centered Login Button at the bottom
           Positioned(
-            bottom: 20,
+            bottom: 40,
             left: 0,
             right: 0,
             child: Center(
@@ -132,14 +144,19 @@ class _CarouselWithIndicatorPageState extends State<CarouselWithIndicatorPage> {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-                  backgroundColor: Colors.blue, // Customize color
+                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 14),
+                  backgroundColor: Color(0xFF4CAF50), // Green tone for the button
+                  elevation: 5,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
                 child: Text(
-                  'Login',
+                  'Next',
                   style: TextStyle(
                     fontSize: 18,
                     color: Colors.white,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
