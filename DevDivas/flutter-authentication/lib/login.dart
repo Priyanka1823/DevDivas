@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:auth0_flutter/auth0_flutter.dart';
 import 'package:flutterdemo/upload_img.dart';
 import 'dart:ui';
+import 'package:animated_text_kit/animated_text_kit.dart';
 
 const appScheme = 'flutterdemo';
 
@@ -21,18 +22,12 @@ class ProfileIcon extends StatelessWidget {
     showMenu<String>(
       context: context,
       position: RelativeRect.fromRect(
-        Offset(overlay.size.width - 80, 80) & Size(100, 100), // Positioning below the icon
+        Offset(overlay.size.width - 80, 80) & Size(100, 100),
         Offset.zero & overlay.size,
       ),
       items: [
-        PopupMenuItem<String>(
-          value: 'username',
-          child: Text('Name: ${user?.name ?? 'User'}'), // Displaying the name here
-        ),
-        const PopupMenuItem<String>(
-          value: 'logout',
-          child: Text('Logout'),
-        ),
+        PopupMenuItem<String>(value: 'username', child: Text('Name: ${user?.name ?? 'User'}')),
+        const PopupMenuItem<String>(value: 'logout', child: Text('Logout')),
       ],
     ).then((value) async {
       if (value == 'logout') {
@@ -48,8 +43,10 @@ class ProfileIcon extends StatelessWidget {
       child: CircleAvatar(
         radius: 20,
         backgroundImage: NetworkImage(user?.pictureUrl.toString() ?? ''),
-        backgroundColor: Colors.grey,
-        child: user?.pictureUrl == null ? const Text('S', style: TextStyle(color: Colors.white)) : null,
+        backgroundColor: Colors.green[700],
+        child: user?.pictureUrl == null
+            ? const Text('S', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))
+            : null,
       ),
     );
   }
@@ -70,16 +67,65 @@ class Login extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
+        Center(
+          child: SizedBox(
+            width: 300.0,
+            child: AnimatedTextKit(
+              repeatForever: true,
+              animatedTexts: [
+                TypewriterAnimatedText(
+                  'Trash to Craft: Get Your DIY On!',
+                  textStyle: TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold),
+                  speed: const Duration(milliseconds: 100),
+                ),
+                TypewriterAnimatedText(
+                  'Let’s get creative!',
+                  textStyle: TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold),
+                  speed: const Duration(milliseconds: 100),
+                ),
+                TypewriterAnimatedText(
+                  'Turn Junk into Genius!',
+                  textStyle: TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold),
+                  speed: const Duration(milliseconds: 100),
+                ),
+                TypewriterAnimatedText(
+                  'DIY Magic: From Trash to Treasure!',
+                  textStyle: TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold),
+                  speed: const Duration(milliseconds: 100),
+                ),
+                TypewriterAnimatedText(
+                  'Recycled Ideas, Crafted with Love!',
+                  textStyle: TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold),
+                  speed: const Duration(milliseconds: 100),
+                ),
+                TypewriterAnimatedText(
+                  'Get Crafty, Not Trashy!',
+                  textStyle: TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold),
+                  speed: const Duration(milliseconds: 100),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 30),
         ElevatedButton(
           onPressed: () async {
             await loginAction();
           },
+          style: ElevatedButton.styleFrom(
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.green[700],
+            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
           child: const Text('Login'),
         ),
         if (loginError.isNotEmpty)
           Text(
             loginError,
-            style: const TextStyle(color: Color(0x8B6D57FA)),
+            style: const TextStyle(color: Colors.red),
             textAlign: TextAlign.center,
           ),
       ],
@@ -114,22 +160,21 @@ class _MyAppPageState extends State<LoginPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'DIY',
+          'ReCraft',
           style: TextStyle(color: Colors.white),
         ),
-        backgroundColor: Color(0xFF33244D),
+        backgroundColor: Colors.green[700],
         centerTitle: true,
         actions: [
           if (_credentials != null)
-            ProfileIcon(logoutAction: logoutAction, user: _credentials?.user), // Profile icon in app bar
+            ProfileIcon(logoutAction: logoutAction, user: _credentials?.user),
         ],
       ),
       body: Stack(
         children: [
-          // Solid color background with blur effect
           Positioned.fill(
             child: Container(
-              color: Color(0xF2B293F3).withOpacity(0.5),
+              color: const Color(0xFFDFFFD6).withOpacity(0.5),
             ),
           ),
           Positioned.fill(
@@ -140,12 +185,11 @@ class _MyAppPageState extends State<LoginPage> {
               ),
             ),
           ),
-          // Main content
           Center(
             child: isBusy
                 ? const CircularProgressIndicator()
                 : _credentials != null
-                ? Container() // Just leave it empty as the profile icon is in the AppBar
+                ? Container()
                 : Login(loginAction: loginAction, loginError: errorMessage),
           ),
         ],
@@ -167,13 +211,12 @@ class _MyAppPageState extends State<LoginPage> {
         _credentials = credentials;
       });
 
-      // After successful login, navigate to the Upload Image page
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (context) => UploadImagePage(
-            user: _credentials?.user, // Pass the user profile here
-            logoutAction: logoutAction, // Pass the logoutAction function directly
+            user: _credentials?.user,
+            logoutAction: logoutAction,
           ),
         ),
       );
