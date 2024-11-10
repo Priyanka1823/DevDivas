@@ -1,11 +1,11 @@
-// upload_image_page.dart
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'dart:convert';
 import 'package:auth0_flutter/auth0_flutter.dart';
-
+import 'package:http/http.dart' as http;
+import 'Buys&sell.dart';
 import 'image_detail.dart';
-
 
 class UploadImagePage extends StatefulWidget {
   final UserProfile? user;
@@ -25,8 +25,9 @@ class _UploadImagePageState extends State<UploadImagePage> {
   Future<void> selectImages() async {
     final List<XFile>? selectedImages = await imagePicker.pickMultiImage();
     if (selectedImages != null && selectedImages.isNotEmpty) {
-      imageFileList.addAll(selectedImages);
-      setState(() {});
+      setState(() {
+        imageFileList.addAll(selectedImages);
+      });
     }
   }
 
@@ -35,17 +36,43 @@ class _UploadImagePageState extends State<UploadImagePage> {
       isLoading = true;
     });
 
-    // Simulate upload to MongoDB
-    await Future.delayed(const Duration(seconds: 2));
+    final url = Uri.parse('https://9ce8-2409-40c1-34-e074-8848-d73-18ec-dabe.ngrok-free.app/upload-image');
+    final request = http.MultipartRequest('POST', url);
 
-    setState(() {
-      isLoading = false;
-    });
+    for (var imageFile in imageFileList) {
+      request.files.add(
+        await http.MultipartFile.fromPath('image', imageFile.path),
+      );
+    }
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const ImageDetailsPage()),
-    );
+    try {
+      final response = await request.send();
+      if (response.statusCode == 200) {
+        final responseString = await response.stream.bytesToString();
+        final decodedResponse = json.decode(responseString);
+
+        if (decodedResponse is Map<String, dynamic> && decodedResponse['data'] is List) {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ImageDetailsPage(
+                responseDataList: List<Map<String, dynamic>>.from(decodedResponse['data']),
+              ),
+            ),
+          );
+        } else {
+          print("Unexpected response format");
+        }
+      } else {
+        print("Failed to upload images. Status code: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("An error occurred while uploading images: $e");
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   @override
@@ -54,8 +81,12 @@ class _UploadImagePageState extends State<UploadImagePage> {
       backgroundColor: const Color(0xFFDFFFD6),
       appBar: AppBar(
         centerTitle: true,
-        title: const Text('Upload Images'),
-        backgroundColor: const Color(0xFF33244D),
+        title: const Text(
+          'Upcycle Magic',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.green[700],
+        elevation: 4,
         actions: [
           if (widget.user != null)
             Padding(
@@ -83,27 +114,79 @@ class _UploadImagePageState extends State<UploadImagePage> {
                     ),
                     itemCount: imageFileList.length,
                     itemBuilder: (BuildContext context, int index) {
-                      return Image.file(
-                        File(imageFileList[index].path),
-                        fit: BoxFit.cover,
+                      return Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 4,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.file(
+                            File(imageFileList[index].path),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
                       );
                     },
                   ),
                 ),
               ),
-              const SizedBox(height: 5),
+              const SizedBox(height: 10),
               Padding(
-                padding: const EdgeInsets.only(bottom: 20),
-                child: MaterialButton(
-                  color: const Color.fromARGB(211, 46, 168, 77),
-                  textColor: Colors.white,
-                  child: const Text("Upload Images"),
-                  onPressed: () async {
-                    await selectImages();
-                    if (imageFileList.isNotEmpty) {
-                      await uploadImagesAndNavigate();
-                    }
-                  },
+                padding: const EdgeInsets.symmetric(vertical: 10), // Centered bottom padding
+                child: Column(
+                  children: [
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green[800],
+                        padding: const EdgeInsets.symmetric(horizontal: 35, vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 8,
+                      ),
+                      child: const Text(
+                        "Upload Image",
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold , color: Colors.white),
+                      ),
+                      onPressed: () async {
+                        await selectImages();
+                        if (imageFileList.isNotEmpty) {
+                          await uploadImagesAndNavigate();
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 15),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green[800],
+                        padding: const EdgeInsets.symmetric(horizontal: 35, vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 8,
+                      ),
+                      child: const Text(
+                        "Buy & Sell",
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => RevenuePage(),
+                          ),
+                        );
+                      },
+                    ),
+
+                  ],
                 ),
               ),
             ],
@@ -141,7 +224,10 @@ class ProfileIcon extends StatelessWidget {
       items: [
         PopupMenuItem<String>(
           value: 'username',
-          child: Text('Name: ${user?.name ?? 'User'}'),
+          child: Text(
+            'Name: ${user?.name ?? 'User'}',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
         ),
         const PopupMenuItem<String>(
           value: 'logout',
@@ -162,8 +248,13 @@ class ProfileIcon extends StatelessWidget {
       child: CircleAvatar(
         radius: 20,
         backgroundImage: NetworkImage(user?.pictureUrl.toString() ?? ''),
-        backgroundColor: Colors.grey,
-        child: user?.pictureUrl == null ? const Text('S', style: TextStyle(color: Colors.white)) : null,
+        backgroundColor: Colors.green[700],
+        child: user?.pictureUrl == null
+            ? const Text(
+          'S',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        )
+            : null,
       ),
     );
   }
